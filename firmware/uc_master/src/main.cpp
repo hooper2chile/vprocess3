@@ -11,9 +11,11 @@ Electronic Engineer
 void setup() {
   wdt_disable();
 
+  //all relay off!!!
+  setup_default();
+
   Serial.begin(9600);
   mySerial.begin(9600);
-  granotec.begin(9600);
 
   message.reserve(65);
 
@@ -34,17 +36,16 @@ void loop() {
                 hamilton_sensors();
                 daqmx();
                 control_ph();
-                heat_exchanger_controller('c');   //control de temperatura
+                heat_exchanger_controller();   //control de temperatura
                 broadcast_setpoint(0);
                 break;
 
               case 'w':  //setpoints
                 setpoint();
                 control_ph();
-                heat_exchanger_controller('c');   //control de temperatura
+                heat_exchanger_controller();   //control de temperatura
                 motor_set();
                 broadcast_setpoint(1);
-                daqmx();
                 break;
 
               case 'c':  //calibracion de sensores
@@ -53,12 +54,6 @@ void loop() {
 
               case 'u':  //umbrales actuadores motores
                 actuador_umbral();
-                break;
-
-              case 'a':  //setpoint autoclave: message[2] tiene que ser 'v' para setear vapor para autoclave
-                heat_exchanger_controller('a');      //control de estirilizacion
-                Serial.println("se fijo autoclave"); //"AUTOCLAVE ON");
-                broadcast_setpoint(1);
                 break;
 
               default:

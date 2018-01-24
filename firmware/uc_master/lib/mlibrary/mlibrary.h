@@ -6,11 +6,8 @@ Electronic Engineer
 
 
 #include "Arduino.h"
-
 #include "SoftwareSerial.h"
 SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial port.
-SoftwareSerial granotec(4, 5);  //for control of motor and electro valvules
-
 
 #define  INT(x)   (x-48)  //ascii convertion
 #define iINT(x)   (x+48)  //inverse ascii convertion
@@ -19,13 +16,7 @@ SoftwareSerial granotec(4, 5);  //for control of motor and electro valvules
 #define SPEED_MAX 100     //[RPM]
 #define TEMP_MAX  130     //[ºC] //Ajustado para autoclave
 
-//#define Ts        1000     //1000ms
-
-#define Gap_temp0 0.5
 #define Gap_temp1 1.0       //1ºC
-#define Gap_temp2 2.0
-#define Gap_temp3 3.0
-#define Gap_temp4 5.0
 
 #define Gap_pH_0  0.05
 #define Gap_pH_1  0.10     // 0.1 (pH)
@@ -33,6 +24,23 @@ SoftwareSerial granotec(4, 5);  //for control of motor and electro valvules
 #define Gap_pH_3  0.75
 #define Gap_pH_4  1.00
 #define Gap_pH_5  2.00
+
+#define PWM 5    //D5 is the pwm pin for 741 circuit
+
+const int vaf = A7;  //valvula agua fria
+const int vac = A6;  //valvula agua caliente
+const int bom = A5;  //enable de la bomba  (->rele->contactor)
+const int vdf = A4;  //enable vdf of motor (->rele->contactor)
+
+// Sensors
+const int SENSOR_PH    = A0;  // Input pin for measuring Vout
+const int SENSOR_TEMP1 = A1;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
+const int SENSOR_TEMP2 = A2;
+const int SENSOR_OD    = A3;
+
+const int VOLTAGE_REF  = 5;  // Reference voltage for analog read
+const int RS = 10;          // Shunt resistor value (in ohms)
+const int N  = 200; //500
 
 
 String  message     = "";  String  new_write   = "";  String  new_write0   = "";
@@ -85,15 +93,7 @@ float Byte4 = 0;  char cByte4[15] = "";
 float Byte5 = 0;  char cByte5[15] = "";
 float Byte6 = 0;  char cByte6[15] = "";
 
-// Sensors
-const int SENSOR_PH    = A0;  // Input pin for measuring Vout
-const int SENSOR_TEMP1 = A1;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
-const int SENSOR_TEMP2 = A2;
-const int SENSOR_OD    = A3;
 
-const int VOLTAGE_REF  = 5;  // Reference voltage for analog read
-const int RS = 10;          // Shunt resistor value (in ohms)
-const int N  = 200; //500
 
 //calibrate function()
 char  var = '0';
@@ -405,33 +405,28 @@ void control_ph() {
 }
 
 
-//esta funcion debe llevar información de las rpm para el motor y temperatura del sistema. El uc_granotec debe decidir en función
-//de la magnitud de esa temperatura que electro valvulas utiliza, si de agua o de vapor.
-//rst5 = : flag for heat heat_exchanger_controller
+//rst5 = : flag for heat_exchanger_controller
+//rst2 = : flag enable for motion in motor
 #define DELTA_TEMP 1
-void heat_exchanger_controller(char option) {
-  switch ( option ) {
-    case 'c': //controlar temperatura
-      if ( rst5 == 1 && autoclave_flag == 1) {
-        signal = "";
-        signal = 'd'; //opcion 'd' (d-efault): modo apagado de electrovalvulas y bombas
+void heat_exchanger_controller() {
+  if ( rst5 == 1 ) {
+    digitalWrite(vac, HIGH); //apaga calentar
+    digitalWrite(vaf, HIGH); //apaga enfria
+    digitalWrite(bom, HIGH); //apaga bomba
+  }
+  else if ( rst5 == 0 ) {
+      if ( Temp1 < mytempset - DELTA_TEMP )
+      {
+        digitalWrite(vac, LOW); //aumenta temperatura
+        digitalWrite(bom, LOW); //recircula con bomba
       }
-      //opcion 'p' (p-roceso): se switchea las electrovalvulas para controlar temperatura con agua caliente ('a') o vapor ('v')
-      else if ( rst5 == 0 ) {
-          signal = "";
-          if      ( Temp1 < mytempset - DELTA_TEMP ) signal = 'v'; //aumenta temperatura
-          else if ( Temp1 > mytempset + DELTA_TEMP ) signal = 'a'; //enfria
-          else    signal = 'o'; //si la temperatura esta en el entorno  de +- DELTA_TEMP, no hacer nada
+      else if ( Temp1 > mytempset + DELTA_TEMP )
+      {
+        digitalWrite(vaf, LOW); //enfria
+        digitalWrite(bom, LOW); //recircula con bomba
       }
-      break;
-
-    case 'a': //modo autoclave
-      if ( rst5 == 1 ) {
-        autoclave_flag = 0;
-        signal = "";
-        signal = (String) message[2]; //probando
-      }
-      break;
+      else
+        digitalWrite(bom, LOW); //recircula con bomba, si la temperatura esta en el entorno  de +- DELTA_TEMP, no hacer nada
   }
 
   return;
@@ -439,13 +434,21 @@ void heat_exchanger_controller(char option) {
 
 
 
-void motor_set() {  //opcion "m" motor: destinado a operar las rpm del motor
-  signal = "";
-  if ( rst2 == 0 ) signal = "m0" + String(mymix);
-  else             signal = "m1" + String(mymix);
-
-  return;
+uint16_t rpm_set = 50;
+void motor_set() {
+  if ( rst2 == 0) {
+    uint16_t pwm_set = map(rpm_set, 50, 750, 40, 255);
+    digitalWrite(vdf, LOW);  //VDF ON
+    analogWrite(PWM, pwm_set);  //VDF SPEED SET
+  }
+  else {
+    rpm_set = 0;
+    int pwm_set = 0;
+    digitalWrite(vdf, HIGH); //VDF ON
+    analogWrite(PWM, pwm_set);  //VDF SPEED SET
+  }
 }
+
 
 
 
@@ -453,7 +456,7 @@ void motor_set() {  //opcion "m" motor: destinado a operar las rpm del motor
 void setpoint() {
   //acá se leen los nuevos setpoint para los lazos de control
   write_crumble();
-  autoclave_flag = 1;
+
   //Serial.println("good setpoint");
 
   return;
@@ -489,18 +492,13 @@ void broadcast_setpoint(uint8_t select) {
       new_write0 = "";
       new_write0 = new_write.substring(0,3) + uset_ph + new_write.substring(7,34) + uset_temp + new_write.substring(37,55) + "\n";
       mySerial.print(new_write0);
-      //*******************************************
-      //testing serial communication to uc_granotec
-      granotec.println(signal);
-      //testing
-      //*******************************************
       break;
 
     case 1: //update command and re-tx.
       new_write = "";
       new_write = message.substring(0,3) + uset_ph + message.substring(7,34) + uset_temp + message.substring(37,55) + "\n";
       mySerial.print(new_write);
-      granotec.println(signal);
+      //granotec.println(signal);
       break;
 
     default:
@@ -521,6 +519,18 @@ void clean_strings() {
   uset_ph   = "";
   ph_select ="";
 }
+
+
+// default setup:  ALL Contactor OFF (HIGH => OFF)
+void setup_default() {
+  digitalWrite(vaf, HIGH);  //Contactor valve water off
+  digitalWrite(vac, HIGH);  //Contactor valve steam off
+
+  digitalWrite(bom, HIGH);  //Contactor bomb off
+  digitalWrite(vdf, HIGH);  //VDF OFF
+}
+
+
 
 
 

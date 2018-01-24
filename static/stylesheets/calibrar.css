@@ -1,0 +1,136 @@
+<!Modelos de caja calibrar>
+
+
+
+
+header{
+  text-align: center;
+  background: white;
+  font-size: 70px;
+  font-family: verdana;
+}
+
+
+.caja1 {
+    font-size: 16px;
+    font-family: verdana;
+    background: rgb(65, 182, 230);
+    width: 300px;
+    height: 280px;
+    padding: 10px;
+    border: 2px solid lightblue;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-right: 5px;
+    text-align: left;
+    margin-left: 150px;
+    border-radius: 50px;
+}
+
+
+
+.caja2 {
+    font-size: 16px;
+    font-family: verdana;
+    background: rgb(65, 182, 230);
+    width: 300px;
+    height: 280px;
+    padding: 10px;
+    border: 2px solid lightblue;
+    margin-top: -355px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    text-align: left;
+    margin-left: 500px;
+    border-radius: 50px;
+}
+
+
+
+.caja3 {
+    font-size: 16px;
+    font-family: verdana;
+    background: rgb(65, 182, 230);
+    width: 300px;
+    height: 280px;
+    padding: 10px;
+    border: 2px solid lightblue;
+    margin-top: -360px;
+    margin-right: -50px;
+    text-align: left;
+    margin-bottom: 110px;
+    margin-left: 852px;
+    border-radius: 50px;
+}
+
+
+
+.caja4{
+  font-size: 16px;
+  font-family: verdana;
+  background: rgb(65, 182, 230);
+  width: 300px;
+  height: 280px;
+  padding: 20px;
+  border: 2px solid lightblue;
+  margin-top: -140px;
+  margin-right: 10px;
+  text-align: left;
+  margin-bottom: 5px;
+  margin-left: 300px;
+  border-radius: 50px;
+}
+
+
+.caja5{
+  font-size: 16px;
+  font-family: verdana;
+  background: rgb(65, 182, 230);
+  width: 300px;
+  height: 280px;
+  padding: 20px;
+  border: 2px solid lightblue;
+  margin-top: -377px;
+  margin-right: 10px;
+  text-align: left;
+  margin-bottom: 5px;
+  margin-left: 680px;
+  border-radius: 50px;
+}
+
+
+.caja6{
+  font-size: 16px;
+  font-family: verdana;
+  background: rgb(65, 182, 230);
+  width: 315px;
+  height: 300px;
+  padding: 10px;
+  border: 2px solid lightblue;
+  margin-right: 150px;
+  text-align: left;
+  margin-left: 300px;
+
+  margin-top: -48px;
+  margin-bottom: -10px;
+  border-radius: 50px;
+}
+
+
+
+.caja7{
+  font-size: 16px;
+  font-family: verdana;
+  background: rgb(65, 182, 230);
+  width: 315px;
+  height: 300px;
+  padding: 10px;
+  border: 2px solid lightblue;
+  margin-right: 150px;
+  text-align: left;
+  margin-left: 680px;
+
+  margin-top: -365px;
+  margin-bottom: -10px;
+  border-radius: 50px;
+}

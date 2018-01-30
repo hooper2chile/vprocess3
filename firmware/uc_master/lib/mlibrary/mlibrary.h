@@ -37,7 +37,7 @@ SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial por
 //relays
 #define VAF A0  //valvula agua fria
 #define VAC A1  //valvula agua caliente
-#define VDF A2  //enable vdf of motor (->rele->contactor)
+#define VDF A4  //enable vdf of motor (->rele->contactor)
 #define BOM A3  //enable de la bomba  (->rele->contactor)
 
 // Sensors

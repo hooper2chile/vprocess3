@@ -422,8 +422,16 @@ void heat_exchanger_controller() {
   }
   else if ( rst5 == 0 ) {
       digitalWrite(BOM, LOW); //recircula con bomba
-      if ( Temp1 < mytempset - DELTA_TEMP )       digitalWrite(VAC, LOW); //aumenta temperatura
-      else if ( Temp1 > mytempset + DELTA_TEMP )  digitalWrite(VAF, LOW); //enfría
+      //Enfriar
+      if ( Temp1 < mytempset - DELTA_TEMP )    {
+           digitalWrite(VAC, LOW);  //aumenta temperatura
+           digitalWrite(VAF, HIGH); //enfría
+      }
+      //Calentar
+      else if ( Temp1 > mytempset + DELTA_TEMP ) {
+        digitalWrite(VAF, LOW);  //enfría
+        digitalWrite(VAC, HIGH); //aumenta temperatura
+      }
   }
 
   return;

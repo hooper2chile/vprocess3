@@ -6,8 +6,10 @@ Electronic Engineer
 
 
 #include "Arduino.h"
+
 #include "SoftwareSerial.h"
 SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial port.
+
 
 #define  INT(x)   (x-48)  //ascii convertion
 #define iINT(x)   (x+48)  //inverse ascii convertion
@@ -16,7 +18,12 @@ SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial por
 #define SPEED_MAX 100     //[RPM]
 #define TEMP_MAX  130     //[ºC] //Ajustado para autoclave
 
+
+#define Gap_temp0 0.5
 #define Gap_temp1 1.0       //1ºC
+#define Gap_temp2 2.0
+#define Gap_temp3 3.0
+#define Gap_temp4 5.0
 
 #define Gap_pH_0  0.05
 #define Gap_pH_1  0.10     // 0.1 (pH)
@@ -27,21 +34,10 @@ SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial por
 
 #define PWM 5    //D5 is the pwm pin for 741 circuit
 
-const int vaf = A7;  //valvula agua fria
-const int vac = A6;  //valvula agua caliente
-const int bom = A5;  //enable de la bomba  (->rele->contactor)
-const int vdf = A4;  //enable vdf of motor (->rele->contactor)
-
-// Sensors
-const int SENSOR_PH    = A0;  // Input pin for measuring Vout
-const int SENSOR_TEMP1 = A1;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
-const int SENSOR_TEMP2 = A2;
-const int SENSOR_OD    = A3;
-
-const int VOLTAGE_REF  = 5;  // Reference voltage for analog read
-const int RS = 10;          // Shunt resistor value (in ohms)
-const int N  = 200; //500
-
+#define VAF A7  //valvula agua fria
+#define VAC A6  //valvula agua caliente
+#define BOM A5  //enable de la bomba  (->rele->contactor)
+#define VDF A4  //enable vdf of motor (->rele->contactor)
 
 String  message     = "";  String  new_write   = "";  String  new_write0   = "";
 
@@ -93,7 +89,15 @@ float Byte4 = 0;  char cByte4[15] = "";
 float Byte5 = 0;  char cByte5[15] = "";
 float Byte6 = 0;  char cByte6[15] = "";
 
+// Sensors
+const int SENSOR_PH    = A0;  // Input pin for measuring Vout
+const int SENSOR_TEMP1 = A1;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
+const int SENSOR_TEMP2 = A2;
+const int SENSOR_OD    = A3;
 
+const int VOLTAGE_REF  = 5;  // Reference voltage for analog read
+const int RS = 10;          // Shunt resistor value (in ohms)
+const int N  = 200; //500
 
 //calibrate function()
 char  var = '0';
@@ -313,7 +317,6 @@ void daqmx() {
   Byte5 = Itemp1;
   Byte6 = Itemp2;
 
-
   dtostrf(Byte0, 7, 2, cByte0);
   dtostrf(Byte1, 7, 2, cByte1);
   dtostrf(Byte2, 7, 2, cByte2);
@@ -410,23 +413,14 @@ void control_ph() {
 #define DELTA_TEMP 1
 void heat_exchanger_controller() {
   if ( rst5 == 1 ) {
-    digitalWrite(vac, HIGH); //apaga calentar
-    digitalWrite(vaf, HIGH); //apaga enfria
-    digitalWrite(bom, HIGH); //apaga bomba
+    digitalWrite(VAC, HIGH); //apaga calentar
+    digitalWrite(VAF, HIGH); //apaga enfria
+    digitalWrite(BOM, HIGH); //apaga bomba
   }
   else if ( rst5 == 0 ) {
-      if ( Temp1 < mytempset - DELTA_TEMP )
-      {
-        digitalWrite(vac, LOW); //aumenta temperatura
-        digitalWrite(bom, LOW); //recircula con bomba
-      }
-      else if ( Temp1 > mytempset + DELTA_TEMP )
-      {
-        digitalWrite(vaf, LOW); //enfria
-        digitalWrite(bom, LOW); //recircula con bomba
-      }
-      else
-        digitalWrite(bom, LOW); //recircula con bomba, si la temperatura esta en el entorno  de +- DELTA_TEMP, no hacer nada
+      digitalWrite(BOM, LOW); //recircula con bomba
+      if ( Temp1 < mytempset - DELTA_TEMP )       digitalWrite(VAC, LOW); //aumenta temperatura
+      else if ( Temp1 > mytempset + DELTA_TEMP )  digitalWrite(VAF, LOW); //enfría
   }
 
   return;
@@ -438,25 +432,22 @@ uint16_t rpm_set = 50;
 void motor_set() {
   if ( rst2 == 0) {
     uint16_t pwm_set = map(rpm_set, 50, 750, 40, 255);
-    digitalWrite(vdf, LOW);  //VDF ON
+    digitalWrite(VDF, LOW);     //VDF ON
     analogWrite(PWM, pwm_set);  //VDF SPEED SET
   }
   else {
     rpm_set = 0;
     int pwm_set = 0;
-    digitalWrite(vdf, HIGH); //VDF ON
+    digitalWrite(VDF, HIGH);    //VDF ON
     analogWrite(PWM, pwm_set);  //VDF SPEED SET
   }
 }
 
 
-
-
-
 void setpoint() {
   //acá se leen los nuevos setpoint para los lazos de control
   write_crumble();
-
+  autoclave_flag = 1;
   //Serial.println("good setpoint");
 
   return;
@@ -492,6 +483,11 @@ void broadcast_setpoint(uint8_t select) {
       new_write0 = "";
       new_write0 = new_write.substring(0,3) + uset_ph + new_write.substring(7,34) + uset_temp + new_write.substring(37,55) + "\n";
       mySerial.print(new_write0);
+      //*******************************************
+      //testing serial communication to uc_granotec
+      //granotec.println(signal);
+      //testing
+      //*******************************************
       break;
 
     case 1: //update command and re-tx.
@@ -519,18 +515,6 @@ void clean_strings() {
   uset_ph   = "";
   ph_select ="";
 }
-
-
-// default setup:  ALL Contactor OFF (HIGH => OFF)
-void setup_default() {
-  digitalWrite(vaf, HIGH);  //Contactor valve water off
-  digitalWrite(vac, HIGH);  //Contactor valve steam off
-
-  digitalWrite(bom, HIGH);  //Contactor bomb off
-  digitalWrite(vdf, HIGH);  //VDF OFF
-}
-
-
 
 
 

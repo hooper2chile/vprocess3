@@ -519,12 +519,7 @@ def autoclave_functions(dato):
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
 
-    #función TimeCounter: poner acá, posiblemente con thread2, falta recibir la confirmación de activación
-    global thread2
-    if thread2 is None:
-        thread2 = socketio.start_background_task(target=background_thread2)
-
-
+    
     try:
         f = open(DIR + "autoclave.txt","a+")
      	f.write(str(ac_sets) + ', ' + str(time_save) + ', ' + str(temp_save) + '\n')
@@ -541,31 +536,6 @@ def autoclave_functions(dato):
 #ac_sets[2] =: flag deshabilitar control temperatura webpage proceso
 #ac_sets[3] =: flag habilitar (AutoClave) webpage esterilizacion
 #CONFIGURACION DE THREADS
-def background_thread2():
-    global ac_sets, time_save, temp_save, thread2, measures
-    while True:
-        communication.cook_autoclave('d')  # partimos poniendo bomba y valvulas a default (OFF)
-        while ac_sets[1] > 0: # "mientras el tiempo continua corriendo"
-            if float(measures[2]) >= temp_save:   # "si la temperatura es mayor que la temperatura seteada"
-                communication.cook_autoclave('o') # entonces no seguir calentando, ni enfriar, 'n' es solamente recircular
-                socketio.sleep(1) # 60[s]
-                ac_sets[1] -= 1   # ac_sets[1]=: timer set, ac_sets[2]=: temperatura set???
-                socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
-
-            else:
-                #ac_sets[1] = time_save    # repone el tiempo seteado en caso que rompa la "cadena de calor de autoclavado" para reiniciarlo
-                #socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
-                communication.cook_autoclave('v') # sino aplicar vapor al intercambiador
-                socketio.sleep(0.5) #para no matar el procesador cuando no pasa nada...
-
-        if ac_sets[1] <= 0:
-                ac_sets[1] = 0  #asegurando el valor
-
-        #communication.cook_autoclave('d')  # terminamos poniendo bomba y valvulas a default (OFF)
-        #communication.cook_autoclave('o')   # pongo el sistema a solo recircular
-	socketio.sleep(0.5) #para no matar el procesador cuando no pasa nada..
-
-
 
 
 def background_thread1():

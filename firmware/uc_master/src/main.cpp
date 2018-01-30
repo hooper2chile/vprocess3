@@ -11,16 +11,17 @@ Electronic Engineer
 void setup() {
   wdt_disable();
 
-  //all relay off!!!
-  setup_default();
+  pinMode(VAF, OUTPUT);
+  pinMode(VAC, OUTPUT);
+  pinMode(VDF, OUTPUT);
+  pinMode(BOM, OUTPUT);
+  pinMode(PWM, OUTPUT);
+
 
   Serial.begin(9600);
   mySerial.begin(9600);
 
   message.reserve(65);
-
-  DDRB = DDRB | (1<<PB0) | (1<<PB5);
-  PORTB = (0<<PB0) | (1<<PB5);
 
   wdt_enable(WDTO_8S);
 }
@@ -29,23 +30,24 @@ void setup() {
 void loop() {
   if ( stringComplete  ) {
       if ( validate() ) {
-          PORTB = 1<<PB0;
+          //PORTB = 1<<PB0;
 
           switch ( message[0] ) {
               case 'r':  //lectura de sensores
                 hamilton_sensors();
                 daqmx();
                 control_ph();
-                heat_exchanger_controller();   //control de temperatura
+                //heat_exchanger_controller();   //control de temperatura
                 broadcast_setpoint(0);
                 break;
 
               case 'w':  //setpoints
                 setpoint();
                 control_ph();
-                heat_exchanger_controller();   //control de temperatura
+                //heat_exchanger_controller();   //control de temperatura
                 motor_set();
                 broadcast_setpoint(1);
+                daqmx();
                 break;
 
               case 'c':  //calibracion de sensores
@@ -60,7 +62,7 @@ void loop() {
                 break;
           }
 
-          PORTB = 0<<PB0;
+          //PORTB = 0<<PB0;
       }
       else {
         Serial.println("bad validate");

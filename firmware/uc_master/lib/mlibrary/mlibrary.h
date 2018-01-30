@@ -34,10 +34,18 @@ SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial por
 
 #define PWM 5    //D5 is the pwm pin for 741 circuit
 
-#define VAF A7  //valvula agua fria
-#define VAC A6  //valvula agua caliente
-#define BOM A5  //enable de la bomba  (->rele->contactor)
-#define VDF A4  //enable vdf of motor (->rele->contactor)
+//relays
+#define VAF A0  //valvula agua fria
+#define VAC A1  //valvula agua caliente
+#define VDF A2  //enable vdf of motor (->rele->contactor)
+#define BOM A3  //enable de la bomba  (->rele->contactor)
+
+// Sensors
+const int SENSOR_PH    = A7;  // Input pin for measuring Vout
+const int SENSOR_TEMP1 = A6;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
+const int SENSOR_OD    = A5;
+//const int SENSOR_TEMP2 = A2;
+
 
 String  message     = "";  String  new_write   = "";  String  new_write0   = "";
 
@@ -89,11 +97,6 @@ float Byte4 = 0;  char cByte4[15] = "";
 float Byte5 = 0;  char cByte5[15] = "";
 float Byte6 = 0;  char cByte6[15] = "";
 
-// Sensors
-const int SENSOR_PH    = A0;  // Input pin for measuring Vout
-const int SENSOR_TEMP1 = A1;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
-const int SENSOR_TEMP2 = A2;
-const int SENSOR_OD    = A3;
 
 const int VOLTAGE_REF  = 5;  // Reference voltage for analog read
 const int RS = 10;          // Shunt resistor value (in ohms)

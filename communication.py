@@ -2,8 +2,8 @@
 # --*- coding: utf-8 -*--
 import sys, zmq, time, logging
 
-logging.basicConfig(filename='/home/pi/vprocess2/log/communication.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
-DIR="/home/pi/vprocess2/"
+logging.basicConfig(filename='/home/pi/vprocess3/log/communication.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+DIR="/home/pi/vprocess3/"
 
 #5556: for download data
 #5557: for upload data

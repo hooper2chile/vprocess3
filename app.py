@@ -5,9 +5,9 @@ from flask_socketio import SocketIO, emit, disconnect
 
 import os, sys, logging, communication, reviewDB, tocsv
 
-logging.basicConfig(filename='/home/pi/vprocess2/log/app.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+logging.basicConfig(filename='/home/pi/vprocess3/log/app.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
-DIR="/home/pi/vprocess2/"
+DIR="/home/pi/vprocess3/"
 SPEED_MAX = 100 #150 [rpm]
 TEMP_MAX  = 130 #130 [ºC]
 TIME_MAX  = 360 #360 [min] = 6 [HR]
@@ -173,11 +173,11 @@ def system(dato):
 
         elif task[0] == "limpiar":
             try:
-                os.system("rm -rf /home/pi/vprocess2/csv/*.csv")
-                os.system("rm -rf /home/pi/vprocess2/log/*.log")
-                os.system("rm -rf /home/pi/vprocess2/log/my.log.*")
-                os.system("rm -rf /home/pi/vprocess2/database/*.db")
-                os.system("rm -rf /home/pi/vprocess2/database/*.db-journal")
+                os.system("rm -rf /home/pi/vprocess3/csv/*.csv")
+                os.system("rm -rf /home/pi/vprocess3/log/*.log")
+                os.system("rm -rf /home/pi/vprocess3/log/my.log.*")
+                os.system("rm -rf /home/pi/vprocess3/database/*.db")
+                os.system("rm -rf /home/pi/vprocess3/database/*.db-journal")
 
             except:
                 pass

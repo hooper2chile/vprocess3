@@ -5,9 +5,9 @@
 '''
 import os, sys, time, datetime, sqlite3, sqlitebck, logging, communication
 
-logging.basicConfig(filename='/home/pi/vprocess2/log/database.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+logging.basicConfig(filename='/home/pi/vprocess3/log/database.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 TIME_MIN_BD = 1 # 1 [s]
-DIR="/home/pi/vprocess2/"
+DIR="/home/pi/vprocess3/"
 flag_database = "False"
 flag_database_local = False
 
@@ -43,9 +43,9 @@ def update_db(real_data, connector, c, first_time, BACKUP):
         sqlitebck.copy(connector, bck)
 
         try:
-            os.system('sqlite3 -header -csv %s "select * from ph;"   > /home/pi/vprocess2/csv/%s' % (filedb,filedb[31:-3])+'full_ph.csv' )
-            os.system('sqlite3 -header -csv %s "select * from od;"   > /home/pi/vprocess2/csv/%s' % (filedb,filedb[31:-3])+'full_od.csv' )
-            os.system('sqlite3 -header -csv %s "select * from temp;" > /home/pi/vprocess2/csv/%s' % (filedb,filedb[31:-3])+'full_temp.csv' )
+            os.system('sqlite3 -header -csv %s "select * from ph;"   > /home/pi/vprocess3/csv/%s' % (filedb,filedb[31:-3])+'full_ph.csv' )
+            os.system('sqlite3 -header -csv %s "select * from od;"   > /home/pi/vprocess3/csv/%s' % (filedb,filedb[31:-3])+'full_od.csv' )
+            os.system('sqlite3 -header -csv %s "select * from temp;" > /home/pi/vprocess3/csv/%s' % (filedb,filedb[31:-3])+'full_temp.csv' )
 
             logging.info("\n Backup FULL REALIZADO \n")
 

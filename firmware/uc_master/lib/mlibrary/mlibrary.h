@@ -7,10 +7,9 @@ Electronic Engineer
 #include "Arduino.h"
 
 #include "SoftwareSerial.h"
-SoftwareSerial mySerial(2,
-                        3); // RX(Digital2), TX(Digital3) Software serial port.
+SoftwareSerial mySerial(2, 3); // RX(Digital2), TX(Digital3) Software serial port.
 
-#define INT(x) (x - 48)  // ascii convertion
+#define  INT(x) (x - 48)  // ascii convertion
 #define iINT(x) (x + 48) // inverse ascii convertion
 
 #define SPEED_MIN 2.0
@@ -30,7 +29,7 @@ SoftwareSerial mySerial(2,
 #define Gap_pH_4 1.00
 #define Gap_pH_5 2.00
 
-#define PWM_PIN 5 // D5 is the pwm pin for 741 circuit
+#define PWM_PIN 9 // D5 is the pwm pin for 741 circuit
 
 // relays
 #define VAF A0 // valvula agua fria
@@ -40,8 +39,7 @@ SoftwareSerial mySerial(2,
 
 // Sensors
 const int SENSOR_PH = A7; // Input pin for measuring Vout
-const int SENSOR_TEMP1 =
-    A6; // Original: A1. Lo cambie por que arruine ese pin trabajando.
+const int SENSOR_TEMP1 = A6;
 const int SENSOR_OD = A5;
 // const int SENSOR_TEMP2 = A2;
 
@@ -101,18 +99,19 @@ float umbral_temp = SPEED_MAX;
 
 // for incoming serial data
 float Byte0 = 0;
-char cByte0[15] = ""; // por que no a 16?
 float Byte1 = 0;
-char cByte1[15] = "";
 float Byte2 = 0;
-char cByte2[15] = "";
 float Byte3 = 0;
-char cByte3[15] = "";
 float Byte4 = 0;
-char cByte4[15] = "";
 float Byte5 = 0;
-char cByte5[15] = "";
 float Byte6 = 0;
+
+char cByte0[15] = "";
+char cByte1[15] = "";
+char cByte2[15] = "";
+char cByte3[15] = "";
+char cByte4[15] = "";
+char cByte5[15] = "";
 char cByte6[15] = "";
 
 const int VOLTAGE_REF = 5; // Reference voltage for analog read
@@ -287,8 +286,7 @@ void actuador_umbral() {
       umbral_temp = umbral_temp;
   }
 
-  Serial.println(String(umbral_a) + '_' + String(umbral_b) + '_' +
-                 String(umbral_temp));
+  Serial.println(String(umbral_a) + '_' + String(umbral_b) + '_' + String(umbral_temp));
   return;
 }
 
@@ -397,7 +395,7 @@ void control_ph() {
       u_ph = 0.75 * umbral_b; // 75%
 
     else if (dpH > Gap_pH_5)
-      u_ph = umbral_b; // 100%
+      u_ph = umbral_b;        // 100%
 
     ph_select = "b"; //=> Acido
   }
@@ -464,12 +462,14 @@ void heat_exchanger_controller() {
 uint16_t rpm_set = mymix;
 uint16_t pwm_set = 40;
 void motor_set() {
+
   pwm_set = map(rpm_set, 50, 750, 40, 255);
 
   if (rst2 == 0) {
     digitalWrite(VDF, LOW);        // VDF ON
     analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
-  } else {
+  }
+  else {
     rpm_set = 50;
     pwm_set = 0;
     digitalWrite(VDF, HIGH);       // VDF ON

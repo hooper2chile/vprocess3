@@ -11,12 +11,7 @@ Electronic Engineer
 void setup() {
   wdt_disable();
 
-  pinMode(VAF, OUTPUT);
-  pinMode(VAC, OUTPUT);
-  pinMode(BOM, OUTPUT);
-  pinMode(VDF, OUTPUT);
-  pinMode(PWM, OUTPUT);
-
+  setup_default_relay();
 
   Serial.begin(9600);
   mySerial.begin(9600);

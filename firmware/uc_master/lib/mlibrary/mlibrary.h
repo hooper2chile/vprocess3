@@ -444,6 +444,19 @@ void motor_set() {
 }
 
 
+void setup_default_relay() {
+  pinMode(VAF, OUTPUT);
+  pinMode(VAC, OUTPUT);
+  pinMode(BOM, OUTPUT);
+  pinMode(VDF, OUTPUT);
+  pinMode(PWM, OUTPUT);
+
+  digitalWrite(VDF, HIGH);
+  digitalWrite(VAC, HIGH);
+  digitalWrite(VAF, HIGH);
+  digitalWrite(BOM, HIGH);
+}
+
 void setpoint() {
   //acá se leen los nuevos setpoint para los lazos de control
   write_crumble();

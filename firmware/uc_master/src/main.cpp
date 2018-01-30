@@ -13,8 +13,8 @@ void setup() {
 
   pinMode(VAF, OUTPUT);
   pinMode(VAC, OUTPUT);
-  pinMode(VDF, OUTPUT);
   pinMode(BOM, OUTPUT);
+  pinMode(VDF, OUTPUT);
   pinMode(PWM, OUTPUT);
 
 
@@ -37,14 +37,14 @@ void loop() {
                 hamilton_sensors();
                 daqmx();
                 control_ph();
-                //heat_exchanger_controller();   //control de temperatura
+                heat_exchanger_controller();   //control de temperatura
                 broadcast_setpoint(0);
                 break;
 
               case 'w':  //setpoints
                 setpoint();
                 control_ph();
-                //heat_exchanger_controller();   //control de temperatura
+                heat_exchanger_controller();   //control de temperatura
                 motor_set();
                 broadcast_setpoint(1);
                 daqmx();

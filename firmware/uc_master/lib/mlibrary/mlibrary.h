@@ -459,7 +459,7 @@ void heat_exchanger_controller() {
   return;
 }
 
-uint16_t rpm_set = mymix;
+uint16_t rpm_set = (uint16_t) mymix;
 uint16_t pwm_set = 40;
 void motor_set() {
 

@@ -44,7 +44,7 @@ SoftwareSerial mySerial(2, 3);  //RX(Digital2), TX(Digital3) Software serial por
 const int SENSOR_PH    = A7;  // Input pin for measuring Vout
 const int SENSOR_TEMP1 = A6;  //Original: A1. Lo cambie por que arruine ese pin trabajando.
 const int SENSOR_OD    = A5;
-const int SENSOR_TEMP2 = A2;
+//const int SENSOR_TEMP2 = A2;
 
 
 String  message     = "";  String  new_write   = "";  String  new_write0   = "";
@@ -287,7 +287,7 @@ void hamilton_sensors() {
      Iph    += analogRead(SENSOR_PH);
      Iod    += analogRead(SENSOR_OD);
      Itemp1 += analogRead(SENSOR_TEMP1);
-     Itemp2 += analogRead(SENSOR_TEMP2);
+     //Itemp2 += analogRead(SENSOR_TEMP2);
      delayMicroseconds(200);
   }
 

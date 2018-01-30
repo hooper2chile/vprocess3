@@ -30,7 +30,7 @@ SoftwareSerial mySerial(2,
 #define Gap_pH_4 1.00
 #define Gap_pH_5 2.00
 
-#define PWM 5 // D5 is the pwm pin for 741 circuit
+#define PWM_PIN 5 // D5 is the pwm pin for 741 circuit
 
 // relays
 #define VAF A0 // valvula agua fria
@@ -462,16 +462,18 @@ void heat_exchanger_controller() {
 }
 
 uint16_t rpm_set = mymix;
+uint16_t pwm_set = 40;
 void motor_set() {
+  pwm_set = map(rpm_set, 50, 750, 40, 255);
+
   if (rst2 == 0) {
-    uint16_t pwm_set = map(rpm_set, 50, 750, 40, 255);
-    digitalWrite(VDF, LOW);    // VDF ON
-    analogWrite(PWM, pwm_set); // VDF SPEED SET
+    digitalWrite(VDF, LOW);        // VDF ON
+    analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
   } else {
-    rpm_set = 0;
-    int pwm_set = 0;
-    digitalWrite(VDF, HIGH);   // VDF ON
-    analogWrite(PWM, pwm_set); // VDF SPEED SET
+    rpm_set = 50;
+    pwm_set = 0;
+    digitalWrite(VDF, HIGH);       // VDF ON
+    analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
   }
 }
 
@@ -480,14 +482,14 @@ void setup_default_relay() {
   pinMode(VAC, OUTPUT);
   pinMode(BOM, OUTPUT);
   pinMode(VDF, OUTPUT);
-  pinMode(PWM, OUTPUT);
+  pinMode(PWM_PIN, OUTPUT);
 
   digitalWrite(VDF, HIGH);
   digitalWrite(VAC, HIGH);
   digitalWrite(VAF, HIGH);
   digitalWrite(BOM, HIGH);
 
-  analogWrite(PWM, 0);
+  analogWrite(PWM_PIN, 0);
 }
 
 void setpoint() {

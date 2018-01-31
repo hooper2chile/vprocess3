@@ -53,6 +53,9 @@ void loop() {
                 actuador_umbral();
                 break;
 
+              case 'a': //autoclave set
+                autoclave_sets();
+
               default:
                 break;
           }

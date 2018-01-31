@@ -463,7 +463,7 @@ void heat_exchanger_controller() {
 void motor_set() {
   uint16_t pwm_set = 40;
   uint16_t rpm_set = (uint16_t) mymix;
-  
+
   pwm_set = map(rpm_set, 50, 750, 40, 255);
 
   if (rst2 == 0) {
@@ -641,11 +641,8 @@ int validate() {
            message[6] == 'e')
     return 1;
 
-  // Validate actions for autoclave, relay states: Agua o Vapor
-  else if (message[0] == 'a' && message[1] == 'c' &&
-           (message[2] == 'v' || message[2] == 'd' || message[2] == 'a' ||
-            message[2] == 'o') &&
-           message[3] == 'e')
+  // Validate actions for autoclave
+  else if (message[0] == 'a')
     return 1;
 
   // Validate READING

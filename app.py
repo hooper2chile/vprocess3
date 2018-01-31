@@ -496,8 +496,9 @@ def autoclave_functions(dato):
         ac_sets[2] = dato['time_en']
         ac_sets[3] = dato['temp_en']
 
-        temp_save = int(dato['ac_temp'])
         time_save = int(dato['ac_time'])
+        temp_save = int(dato['ac_temp'])
+
 
     except:
         ac_sets[0] = 22
@@ -519,11 +520,11 @@ def autoclave_functions(dato):
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
 
-    
     try:
         f = open(DIR + "autoclave.txt","a+")
      	f.write(str(ac_sets) + ', ' + str(time_save) + ', ' + str(temp_save) + '\n')
     	f.close()
+        communication.cook_setpoint(ac_sets) #se transmiten los datos de autoclave por communication
 	#logging.info("se guardo en autoclave.txt")
 
     except:
@@ -535,9 +536,10 @@ def autoclave_functions(dato):
 #ac_sets[1] =: tiempo de autoclavado
 #ac_sets[2] =: flag deshabilitar control temperatura webpage proceso
 #ac_sets[3] =: flag habilitar (AutoClave) webpage esterilizacion
+
+
+
 #CONFIGURACION DE THREADS
-
-
 def background_thread1():
     save_set_data = [0,0,0,0,0,1,1,1,1,1,0,0,0]
     k = 0
@@ -565,19 +567,6 @@ def background_thread1():
                     communication.cook_setpoint(set_data)
                     save_set_data = set_data
 
-            #### TEST ######
-            '''
-            if k == 8:
-                k = 0
-                communication.cook_setpoint(save_set_data)
-                f = open(DIR + "motor_resend.txt","a+")
-             	f.write(str(set_data) + '\n')
-            	f.close()
-
-            else:
-                k += 1
-            '''
-            #################
 
             #logging.info("\n Se ejecuto Thread 1 emitiendo %s\n" % set_data)
 

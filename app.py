@@ -485,7 +485,7 @@ def calibrar_u_temp(dato):
     socketio.emit('u_calibrar_temp', {'set': u_set_temp}, namespace='/biocl', broadcast=True)
 
 
-
+#autoclave setpoits
 @socketio.on('ac_setpoints', namespace='/biocl')
 def autoclave_functions(dato):
     global ac_sets, time_save, temp_save

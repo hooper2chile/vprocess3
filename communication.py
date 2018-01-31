@@ -204,13 +204,64 @@ def actuador(var,u_set):
 ###############################################################################
 #Se reciben localmente los datos de ac_sets desde app.py
 def cook_autoclave(ac_sets):
-    #ac_sets[0] = int(ac_sets[0])  #temperatura
-    #ac_sets[1] = int(ac_sets[1])  #tiempo
+    ac_sets[0] = int(ac_sets[0])  #temperatura
+    ac_sets[1] = int(ac_sets[1])  #tiempo
+    command = None
+    
+    try:
+        #limites de temperatura
+        if ac_sets[0] >= 130:
+            ac_sets[0] = 130
+        elif ac_sets[0] <= 100:
+            ac_sets[0] = 100
+
+        temp = str(ac_sets[0])
+
+        #limites de tiempo
+        if ac_sets[1] >= 99:
+            ac_sets[1] = 99
+        elif ac_sets[1] <= 0:
+            ac_sets[1] = 0
+
+        time = str(ac_sets[1])
+
+        #ajustando flag tiempo
+        if set_sets[2] is True:
+            set_sets[2] = 1
+        else:
+            set_sets[2] = 0
+
+        flag_time = str(ac_sets[2])
+
+        #ajustando flag temperatura
+        if set_sets[3] is True:
+            set_sets[3] = 1
+        else:
+            set_sets[3] = 0
+
+        flag_temp = str(ac_sets[3])
+
+        command = 'a' + time + 't' + temp + 'f' + flag_time + flag_temp + 'e'
+
+    except:
+        pass
+
+
+
+    try:
+        f = open(DIR + "autoclave2.txt","a+")
+     	f.write(str(command) + '\n')
+    	f.close()
+
+
+    except:
+        logging.info("no se pudo guardar el comando del autoclave en el archivo de texto")
+        pass
 
 
     #armando el comando para autoclave que se enviara por zmq a myserial.py y desde ahí al uc master, desde ahí al uc granotec
     #ejemplo:    acve
-    command_ac = 'a' + ac_sets  + 'e\n'
+    command_ac = 'a' + autoclave_string  + 'e\n'
     logging.info('\n' + command_ac + '_autoclave_sets' + '\n')
 
     published_setpoint(command_ac)

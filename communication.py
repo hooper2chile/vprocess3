@@ -243,25 +243,25 @@ def cook_autoclave(ac_sets):
         #str de time
         time = str(ac_sets[1])
 
-        '''
+        
         #ajustando flag tiempo
-        if set_sets[2] is True:
-            set_sets[2] = 1
+        if ac_sets[2] is True:
+            ac_sets[2] = 1
         else:
-            set_sets[2] = 0
+            ac_sets[2] = 0
 
         #str flag tiempo
         flag_time = str(ac_sets[2])
 
         #ajustando flag temperatura
-        if set_sets[3] is True:
-            set_sets[3] = 1
+        if ac_sets[3] is True:
+            ac_sets[3] = 1
         else:
-            set_sets[3] = 0
+            ac_sets[3] = 0
 
         #str flag temperatura
         flag_temp = str(ac_sets[3])
-        '''
+
 
         command = 'a' + time + 't' + temp + 'f' + str(flag_time) + str(flag_temp) + 'e'
 

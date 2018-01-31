@@ -29,7 +29,7 @@ SoftwareSerial mySerial(2, 3); // RX(Digital2), TX(Digital3) Software serial por
 #define Gap_pH_4 1.00
 #define Gap_pH_5 2.00
 
-#define PWM_PIN 9 // D5 is the pwm pin for 741 circuit
+#define PWM_PIN 5 // D5 is the pwm pin for 741 circuit
 
 // relays
 #define VAF A0 // valvula agua fria

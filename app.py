@@ -524,7 +524,7 @@ def autoclave_functions(dato):
         f = open(DIR + "autoclave.txt","a+")
      	f.write(str(ac_sets) + ', ' + str(time_save) + ', ' + str(temp_save) + '\n')
     	f.close()
-        communication.cook_setpoint(ac_sets) #se transmiten los datos de autoclave por communication
+        communication.cook_autoclave(ac_sets) #se transmiten los datos de autoclave por communication
 	#logging.info("se guardo en autoclave.txt")
 
     except:

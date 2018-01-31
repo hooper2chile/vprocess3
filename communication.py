@@ -128,7 +128,6 @@ def calibrate(var, coef):
         #logging.info("no se pudo guardar set de calibrate()")
 
 
-
 # var = 1 => ph
 # var = 2 => temp
 # e = end
@@ -206,8 +205,25 @@ def actuador(var,u_set):
 def cook_autoclave(ac_sets):
     ac_sets[0] = int(ac_sets[0])  #temperatura
     ac_sets[1] = int(ac_sets[1])  #tiempo
+
     command = None
-    
+    temp = 120
+    time = 30
+    flag_temp = 1
+    flag_time = 1
+
+
+    try:
+        f = open(DIR + "autoclave1.txt","a+")
+     	f.write(str(ac_sets) + '\n')
+    	f.close()
+
+
+    except:
+        logging.info("no se pudo recibir ac_sets desde app.py")
+        pass
+
+
     try:
         #limites de temperatura
         if ac_sets[0] >= 130:
@@ -215,22 +231,26 @@ def cook_autoclave(ac_sets):
         elif ac_sets[0] <= 100:
             ac_sets[0] = 100
 
+        #str de temp
         temp = str(ac_sets[0])
 
         #limites de tiempo
         if ac_sets[1] >= 99:
             ac_sets[1] = 99
-        elif ac_sets[1] <= 0:
-            ac_sets[1] = 0
+        elif ac_sets[1] <= 10:
+            ac_sets[1] = 10
 
+        #str de time
         time = str(ac_sets[1])
 
+        '''
         #ajustando flag tiempo
         if set_sets[2] is True:
             set_sets[2] = 1
         else:
             set_sets[2] = 0
 
+        #str flag tiempo
         flag_time = str(ac_sets[2])
 
         #ajustando flag temperatura
@@ -239,13 +259,15 @@ def cook_autoclave(ac_sets):
         else:
             set_sets[3] = 0
 
+        #str flag temperatura
         flag_temp = str(ac_sets[3])
+        '''
 
-        command = 'a' + time + 't' + temp + 'f' + flag_time + flag_temp + 'e'
+        command = 'a' + time + 't' + temp + 'f' + str(flag_time) + str(flag_temp) + 'e'
 
     except:
+        logging.info("no se pudo generar el command para autoclave2")
         pass
-
 
 
     try:
@@ -253,27 +275,13 @@ def cook_autoclave(ac_sets):
      	f.write(str(command) + '\n')
     	f.close()
 
-
     except:
         logging.info("no se pudo guardar el comando del autoclave en el archivo de texto")
         pass
 
 
-    #armando el comando para autoclave que se enviara por zmq a myserial.py y desde ahí al uc master, desde ahí al uc granotec
-    #ejemplo:    acve
-    command_ac = 'a' + autoclave_string  + 'e\n'
-    logging.info('\n' + command_ac + '_autoclave_sets' + '\n')
+    published_setpoint(command)
 
-    published_setpoint(command_ac)
-
-    try:
-        f = open(DIR + "auto_clave_command.txt","a+")
-        f.write(command_ac)
-        f.close()
-
-    except OSError:
-        pass
-        #logging.info("no se pudo guardar el command del autoclave en el archivo de texto")
 
     return True
 ###############################################################################

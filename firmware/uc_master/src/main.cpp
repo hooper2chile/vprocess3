@@ -37,7 +37,7 @@ void loop() {
                 break;
 
               case 'w':  //setpoints
-                setpoint();
+                write_crumble();
                 control_ph();
                 heat_exchanger_controller();   //control de temperatura
                 motor_set();

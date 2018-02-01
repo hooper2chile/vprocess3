@@ -38,39 +38,36 @@ SoftwareSerial mySerial(2, 3); // RX(Digital2), TX(Digital3) Software serial por
 #define BOM A3 // enable de la bomba  (->rele->contactor)
 
 // Sensors
-const int SENSOR_PH = A7; // Input pin for measuring Vout
+const int SENSOR_PH    = A7; // Input pin for measuring Vout
 const int SENSOR_TEMP1 = A6;
-const int SENSOR_OD = A5;
+const int SENSOR_OD    = A5;
 // const int SENSOR_TEMP2 = A2;
 
-String message = "";
-String new_write = "";
+String message    = "";
+String new_write  = "";
 String new_write0 = "";
 
 boolean stringComplete = false; // whether the string is complete
 
-String ph_var = "";
-String ph_set = "";
-String feed_var = "";
-String feed_set = "";
+String ph_var     = "";
+String ph_set     = "";
+String feed_var   = "";
+String feed_set   = "";
 String unload_var = "";
 String unload_set = "";
-String mix_var = "";
-String mix_set = "";
-String temp_var = "";
-String temp_set = "";
+String mix_var    = "";
+String mix_set    = "";
+String temp_var   = "";
+String temp_set   = "";
 
 // Re-formatting
 String ph_select = "";
 String uset_temp = "";
-String uset_ph = "";
-String svar = "";
+String uset_ph   = "";
+String svar      = "";
 
-// for uc granotec
-String signal = "d"; // d: default
 
 // RESET SETUP
-char autoclave_flag = 1;
 char rst1 = 1;
 char rst2 = 1;
 char rst3 = 1;
@@ -86,12 +83,18 @@ char dir4 = 1;
 char dir5 = 1;
 char dir6 = 1;
 
-float myphset = 0;
+float myphset   = 0;
 float mytempset = 0;
 
-uint8_t myfeed = 0;
-uint8_t myunload = 0;
-uint16_t mymix = 0;
+//a12t127f00e
+uint8_t  ac_temp   = 0;   //entre 100 y 130 [ºC]
+uint8_t  ac_time   = 0;   //entre  10 y 99  [min]
+uint8_t  flag_time = 0;   //flag de tiempo
+uint8_t  flag_temp = 0;   //flag de temperatura
+
+uint8_t  myfeed   = 0;
+uint8_t  myunload = 0;
+uint16_t mymix    = 0;
 
 float umbral_a = SPEED_MAX;
 float umbral_b = SPEED_MAX;
@@ -116,7 +119,7 @@ char cByte6[15] = "";
 
 const int VOLTAGE_REF = 5; // Reference voltage for analog read
 const int RS = 10;         // Shunt resistor value (in ohms)
-const int N = 200;         // 500
+const int N  = 200;        // 500
 
 // calibrate function()
 char var = '0';
@@ -147,9 +150,9 @@ float Temp1 = m2 * Itemp1 + n2; // Temp = 5.31*Itemp - 42.95;
 
 // variable for control
 float u_temp = 0;
-float u_ph = 0;
-float dTemp = 0;
-float dpH = 0;
+float u_ph   = 0;
+float dTemp  = 0;
+float dpH    = 0;
 
 // for sensors 4-20mA
 #define mA 1000.0
@@ -196,9 +199,10 @@ void write_crumble() {
   myphset = ph_set.toFloat();
   mytempset = temp_set.toFloat();
 
-  myfeed = feed_set.toInt();
+  mymix    = mix_set.toInt();
+  myfeed   = feed_set.toInt();
   myunload = unload_set.toInt();
-  mymix = mix_set.toInt();
+
 
   // setting rst
   rst1 = INT(message[40]);
@@ -255,7 +259,6 @@ void sensor_calibrate() {
 void actuador_umbral() {
   // setting threshold ph: u1a160b141e
   if (message[1] == '1') {
-
     umbral_a = 0;
     umbral_b = 0;
     umbral_a = message.substring(3, 6).toFloat();
@@ -274,7 +277,6 @@ void actuador_umbral() {
   }
   // setting threshold temp: u2t011e
   else if (message[1] == '2') {
-
     umbral_temp = 0;
     umbral_temp = message.substring(3, 6).toFloat();
 
@@ -287,6 +289,18 @@ void actuador_umbral() {
   }
 
   Serial.println(String(umbral_a) + '_' + String(umbral_b) + '_' + String(umbral_temp));
+  return;
+}
+
+//a12t127f00e
+void autoclave_sets() {
+  ac_time = message.substring(1,3).toFloat();
+  ac_temp = message.substring(4,7).toFloat();
+  flag_time = INT(message[8]);
+  flag_temp = INT(message[9]);
+
+  Serial.println(String(ac_time)   + '_' + String(ac_temp) + '_'
+               + String(flag_time) + '_' + String(flag_temp));
   return;
 }
 
@@ -311,10 +325,10 @@ void hamilton_sensors() {
   else if (rst2 == 1)
     rst2f = 0;
 
-  Iph = (K * Iph) - (rst2f * NOISE);
+  Iph    = (K * Iph)    - (rst2f * NOISE);
   Itemp1 = (K * Itemp1) - (rst2f * NOISE);
 
-  Iod = (K * Iod) - (rst2f * NOISE);
+  Iod    = (K * Iod)    - (rst2f * NOISE);
   Itemp2 = (K * Itemp2);
 
   // Update measures
@@ -435,31 +449,47 @@ void control_ph() {
 }
 
 // rst5 = : flag for heat_exchanger_controller
-// rst2 = : flag enable for motion in motor
+// rst5 = 0 => funciona proceso (esto llega cuando se destickea el cuadro de deshabilitar temperatrura)
+// rst5 = 1 => apagado  proceso (esto llega por defecto: ticket en el cuiadro de deshabilitar temperatura)
 #define DELTA_TEMP 1
 void heat_exchanger_controller() {
-  if (rst5 == 1) {
-    digitalWrite(VAC, HIGH); // apaga calentar
-    digitalWrite(VAF, HIGH); // apaga enfria
+  //etapa de autoclave
+  if (rst5 == 1 && flag_temp == 1 && flag_time == 1) {
+    digitalWrite(BOM, LOW); // re-circula con bomba
+    if (Temp1 < ac_temp) {
+      digitalWrite(VAC, LOW);  // enciende valvula de agua caliente, aumenta temperatura
+      digitalWrite(VAF, HIGH); // apaga valvula de agua fria
+    }
+    else { //si se supera la temp. de autoclavado, se enfria adiabaticamente! no con agua fria!!!
+      digitalWrite(VAC, HIGH); // apaga valvula de agua caliente
+      digitalWrite(VAF, HIGH); // apaga valvula de agua fria
+    }
+  }
+  //etapa apagado
+  else if (rst5 == 1) {
+    digitalWrite(VAC, HIGH); // apaga valvula de vapor
+    digitalWrite(VAF, HIGH); // apaga valvula de agua fria
     digitalWrite(BOM, HIGH); // apaga bomba
-  } else if (rst5 == 0) {
-    digitalWrite(BOM, LOW); // recircula con bomba
+  }
+  else if (rst5 == 0) {
+    digitalWrite(BOM, LOW); // re-circula con bomba
     // Enfriar
     if (Temp1 < mytempset - DELTA_TEMP) {
-      digitalWrite(VAC, LOW);  // aumenta temperatura
-      digitalWrite(VAF, HIGH); // enfría
+      digitalWrite(VAC, LOW);  // enciende valvula de agua caliente, aumenta temperatura
+      digitalWrite(VAF, HIGH); // apaga valvula de agua fria
     }
     // Calentar
     else if (Temp1 > mytempset + DELTA_TEMP) {
-      digitalWrite(VAF, LOW);  // enfría
-      digitalWrite(VAC, HIGH); // aumenta temperatura
+      digitalWrite(VAF, LOW);  // enciende valvula de agua fria
+      digitalWrite(VAC, HIGH); // apaga valvula de agua caliente
     }
   }
+
 
   return;
 }
 
-
+// rst2 = : flag enable for motion in motor
 void motor_set() {
   uint16_t pwm_set = 40;
   uint16_t rpm_set = (uint16_t) mymix;
@@ -493,14 +523,6 @@ void setup_default_relay() {
   analogWrite(PWM_PIN, 0);
 }
 
-void setpoint() {
-  // acá se leen los nuevos setpoint para los lazos de control
-  write_crumble();
-  autoclave_flag = 1;
-  // Serial.println("good setpoint");
-
-  return;
-}
 
 // function for transform numbers to string format of message
 void format_message(int var) {
@@ -532,11 +554,6 @@ void broadcast_setpoint(uint8_t select) {
                  new_write.substring(7, 34) + uset_temp +
                  new_write.substring(37, 55) + "\n";
     mySerial.print(new_write0);
-    //*******************************************
-    // testing serial communication to uc_granotec
-    // granotec.println(signal);
-    // testing
-    //*******************************************
     break;
 
   case 1: // update command and re-tx.
@@ -616,20 +633,9 @@ int validate() {
   }
 
   // Validate CALIBRATE
-
   else if (message[0] == 'c' && (message[2] == '+' || message[2] == '-') &&
            (message[8] == '+' || message[8] == '-'))
     return 1;
-  /*
-  else if ( message[0]  == 'c' &&
-           (message[2]  == '+' || message[2] == '-') &&
-           (message[8]  == '+' || message[8] == '-') &&
-            message[14] == 'e' &&
-            message.substring(3,8 ).toFloat() < 100 &&
-            message.substring(9,14).toFloat() < 100
-          )
-      return 1;
-  */
 
   // Validete umbral actuador ph: u1a001b001e
   else if (message[0] == 'u' && message[1] == '1' && message[2] == 'a' &&
@@ -642,7 +648,8 @@ int validate() {
     return 1;
 
   // Validate actions for autoclave
-  else if (message[0] == 'a')
+  else if (message[0]  == 'a' && message[3] == 't' && message[7] == 'f' &&
+           message[10] == 'e')
     return 1;
 
   // Validate READING

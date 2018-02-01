@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 # --*- coding: utf-8 -*--
+
+#
+#uc_master
+#Writed by: Felipe Hooper
+#Electronic Engineer
+#
+
 import sys, zmq, time, logging
 
 logging.basicConfig(filename='/home/pi/vprocess3/log/communication.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
@@ -243,7 +250,7 @@ def cook_autoclave(ac_sets):
         #str de time
         time = str(ac_sets[1])
 
-        
+
         #ajustando flag tiempo
         if ac_sets[2] is True:
             ac_sets[2] = 1

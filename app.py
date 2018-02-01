@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+#
+#uc_master
+#Writed by: Felipe Hooper
+#Electronic Engineer
+#
+
 from flask import Flask, render_template, session, request, Response, send_from_directory, make_response
 from flask_socketio import SocketIO, emit, disconnect
 

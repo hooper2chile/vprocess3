@@ -16,8 +16,9 @@ logging.basicConfig(filename='/home/pi/vprocess3/log/app.log', level=logging.INF
 
 DIR="/home/pi/vprocess3/"
 SPEED_MAX = 100 #100 [rpm]
-TEMP_MAX  = 130 #130 [ºC]
+TEMP_MAX  = 130 #130 [C]
 TIME_MAX  = 99  #99 [min]
+
 
 u_set_temp = [SPEED_MAX,0]
 u_set_ph   = [SPEED_MAX,SPEED_MAX]
@@ -110,7 +111,7 @@ def function_thread():
     #print "\n Cliente Conectado al Thread del Bioreactor\n"
     logging.info("\n Cliente Conectado al Thread del Bioreactor\n")
 
-    #Se emite durante la primera conexión de un cliente el estado actual de los setpoints
+    #Se emite durante la primera conexion de un cliente el estado actual de los setpoints
     emit('Setpoints',       {'set': set_data})
     emit('ph_calibrar',     {'set': ph_set})
     emit('od_calibrar',     {'set': od_set})
@@ -253,12 +254,12 @@ def setpoints(dato):
         #logging.info("no se pudo guardar en set_data en setpoints.txt")
 
 
-#Sockets de calibración de instrumentación
+#Sockets de calibracion de instrumentacion
 #CALIBRACION DE PH
 @socketio.on('ph_calibrar', namespace='/biocl')
 def calibrar_ph(dato):
     global ph_set
-    #se reciben los parametros para calibración
+    #se reciben los parametros para calibracion
     setting = [ dato['ph'], dato['iph'], dato['medx'] ]
 
     #ORDEN DE: ph_set:
@@ -289,7 +290,7 @@ def calibrar_ph(dato):
             f = open(DIR + "coef_ph_set.txt","w")
             f.write(str(coef_ph_set) + '\n')
             f.close()
-            #acá va el codigo que formatea el comando de calibración.
+            #aca va el codigo que formatea el comando de calibracion.
             communication.calibrate(0,coef_ph_set)
 
         except:
@@ -316,7 +317,7 @@ def calibrar_ph(dato):
 @socketio.on('od_calibrar', namespace='/biocl')
 def calibrar_od(dato):
     global od_set
-    #se reciben los parametros para calibración
+    #se reciben los parametros para calibracion
     setting = [ dato['od'], dato['iod'], dato['medx'] ]
 
     #ORDEN DE: od_set:
@@ -372,11 +373,11 @@ def calibrar_od(dato):
         #logging.info("no se pudo guardar parameters en od_set.txt")
 
 
-#CALIBRACIÓN TEMPERATURA
+#CALIBRACION TEMPERATURA
 @socketio.on('temp_calibrar', namespace='/biocl')
 def calibrar_temp(dato):
     global temp_set
-    #se reciben los parametros para calibración
+    #se reciben los parametros para calibracion
     setting = [ dato['temp'], dato['itemp'], dato['medx'] ]
 
     #ORDEN DE: od_set:
@@ -436,7 +437,7 @@ def calibrar_temp(dato):
 @socketio.on('u_calibrar', namespace='/biocl')
 def calibrar_u_ph(dato):
     global u_set_ph
-    #se reciben los parametros para calibración
+    #se reciben los parametros para calibracion
     #setting = [ dato['u_acido_max'], dato['u_base_max'] ]
 
     try:
@@ -467,7 +468,7 @@ def calibrar_u_ph(dato):
 @socketio.on('u_calibrar_temp', namespace='/biocl')
 def calibrar_u_temp(dato):
     global u_set_temp
-    #se reciben los parametros para calibración
+    #se reciben los parametros para calibracion
 
     try:
         u_set_temp[0] = int(dato['u_temp'])
@@ -530,7 +531,8 @@ def autoclave_functions(dato):
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
     #se toma el tiempo actual para evaluar posteriormente el tiempo transcurrido y se reenvian los setpoist del AutoClave
-    temp_save = time.time()
+    time_save = time.time()
+    temp_save = ac_sets[0]
     communication.cook_autoclave(ac_sets) #se transmiten los datos de autoclave por communication
 
     try:
@@ -553,7 +555,7 @@ def background_thread1():
     save_set_data = [0,0,0,0,0,1,1,1,1,1,0,0,0]
     k = 0
 
-    global set_data, measures, ac_sets, time_save
+    global set_data, measures, ac_sets, time_save, temp_save
     while True:
         #se emiten las mediciones y setpoints para medir y graficar
         socketio.emit('Medidas', {'data': measures, 'set': set_data}, namespace='/biocl')
@@ -588,19 +590,19 @@ def background_thread1():
                 logging.info("no se pudo hacer el true")
                 pass
 
-            try:
-                if (ac_sets[2] == 1 and ac_sets[3] == 1 and set_data9 == 1):
-                    #algoritmo re-entrante para saber si hay que terminar o continuar con la esterilizacion!
-                    if ( time.time() - temp_save > float(ac_sets[1])*60 ): #se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
+            try:#se debe cumplir: flags habilitados en esterilizarar y deshabilitar en proceso
+                if ( ac_sets[2] == 1 and ac_sets[3] == 1 and set_data9 == 1 ):
+                    #algoritmo re-entrante para saber si hay que terminar o continuar con la esterilizacion en base al tiempo y temperatura!
+                    if ( (ac_sets[0] >= temp_save) and (time.time() - time_save > float(ac_sets[1])*60) ): #se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
                         #setear default los flags si ya termino: a15t121f00e
                         ac_sets[0] = 121
                         ac_sets[1] = 15
-                        ac_sets[2] = False
-                        ac_sets[3] = False              #a15t121f00e
+                        ac_sets[2] = 0
+                        ac_sets[3] = 0              #a15t121f00e
                         communication.cook_autoclave(ac_sets)
                         socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
-                        #set_data[9] = False
+
 
             except:
                 logging.info("no se pudo evaluar")
@@ -609,7 +611,7 @@ def background_thread1():
             ##### archivo para depurar
             try:
                 f = open(DIR + "autoclave_on.txt","a+")
-             	f.write("se esta ejecutando autoclave" + str( time.time() - temp_save ) + '\n')
+             	f.write("se esta ejecutando autoclave_falta_" + str( (time.time() - temp_save)/1000 ) + '\n')
             	f.close()
                 #logging.info("se guardo en autoclave.txt")
 

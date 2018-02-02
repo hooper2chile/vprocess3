@@ -232,8 +232,8 @@ def cook_autoclave(ac_sets):
         #limites de tiempo
         if ac_sets[1] >= 99:
             ac_sets[1] = 99
-        elif ac_sets[1] <= 10:
-            ac_sets[1] = 10
+        elif ac_sets[1] < 10 and ac_sets[1] >= 0:
+            ac_sets[1] = '0' + str(ac_sets[1])
         #str de time
         time = str(ac_sets[1])
 
@@ -256,18 +256,19 @@ def cook_autoclave(ac_sets):
 
         #se construye el string de autoclavado
         command = 'a' + time + 't' + temp + 'f' + str(flag_time) + str(flag_temp) + 'e'
+        published_setpoint(command)
 
+        #se respalda el comando
         f = open(DIR + "autoclave_string.txt","a+")
-     	f.write(str(command) + '_' + str(time.time())  + '\n')
+     	f.write(str(command) + '\n')
     	f.close()
 
     except:
-        logging.info("no se pudo generar el command para autoclave2")
+        logging.info("no se pudo generar el command para autoclave")
         pass
 
 
 
-    published_setpoint(command)
 
 
     return True

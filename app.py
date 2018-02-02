@@ -10,14 +10,14 @@
 from flask import Flask, render_template, session, request, Response, send_from_directory, make_response
 from flask_socketio import SocketIO, emit, disconnect
 
-import os, sys, logging, communication, reviewDB, tocsv
+import time, os, sys, logging, communication, reviewDB, tocsv
 
 logging.basicConfig(filename='/home/pi/vprocess3/log/app.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 DIR="/home/pi/vprocess3/"
-SPEED_MAX = 100 #150 [rpm]
+SPEED_MAX = 100 #100 [rpm]
 TEMP_MAX  = 130 #130 [ºC]
-TIME_MAX  = 360 #360 [min] = 6 [HR]
+TIME_MAX  = 99  #99 [min]
 
 u_set_temp = [SPEED_MAX,0]
 u_set_ph   = [SPEED_MAX,SPEED_MAX]
@@ -516,6 +516,9 @@ def autoclave_functions(dato):
         time_save = "vacio"
         temp_save = "vacio"
 
+        logging.info("no se pudo evaluar")
+
+
     if ac_sets[0] > TEMP_MAX:
         ac_sets[0] = TEMP_MAX
 
@@ -526,32 +529,31 @@ def autoclave_functions(dato):
     #Con cada cambio en los parametros, se vuelven a emitir a todos los clientes.
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
+    #se toma el tiempo actual para evaluar posteriormente el tiempo transcurrido y se reenvian los setpoist del AutoClave
+    temp_save = time.time()
+    communication.cook_autoclave(ac_sets) #se transmiten los datos de autoclave por communication
 
     try:
         f = open(DIR + "autoclave.txt","a+")
      	f.write(str(ac_sets) + ', ' + str(time_save) + ', ' + str(temp_save) + '\n')
     	f.close()
-        communication.cook_autoclave(ac_sets) #se transmiten los datos de autoclave por communication
-	#logging.info("se guardo en autoclave.txt")
+        #logging.info("se guardo en autoclave.txt")
 
     except:
         pass
-	#logging.info("no se pudo guardar en autoclave.txt")
+	    #logging.info("no se pudo guardar en autoclave.txt")
 
 
 #ac_sets[0] =: temperatura de autoclavado
 #ac_sets[1] =: tiempo de autoclavado
 #ac_sets[2] =: flag deshabilitar control temperatura webpage proceso
 #ac_sets[3] =: flag habilitar (AutoClave) webpage esterilizacion
-
-
-
 #CONFIGURACION DE THREADS
 def background_thread1():
     save_set_data = [0,0,0,0,0,1,1,1,1,1,0,0,0]
     k = 0
 
-    global set_data, measures
+    global set_data, measures, ac_sets, time_save
     while True:
         #se emiten las mediciones y setpoints para medir y graficar
         socketio.emit('Medidas', {'data': measures, 'set': set_data}, namespace='/biocl')
@@ -574,7 +576,49 @@ def background_thread1():
                     communication.cook_setpoint(set_data)
                     save_set_data = set_data
 
+            ####################################################################
+            #se ejecuta solo si los flags estan en "1"
+            try:
+                if set_data[9] is True:
+                    set_data9 = 1
+                else:
+                    set_data9 = 0
 
+            except:
+                logging.info("no se pudo hacer el true")
+                pass
+
+            try:
+                if (ac_sets[2] == 1 and ac_sets[3] == 1 and set_data9 == 1):
+                    #algoritmo re-entrante para saber si hay que terminar o continuar con la esterilizacion!
+                    if ( time.time() - temp_save > float(ac_sets[1])*60 ): #se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
+                        #setear default los flags si ya termino: a15t121f00e
+                        ac_sets[0] = 121
+                        ac_sets[1] = 15
+                        ac_sets[2] = 0
+                        ac_sets[3] = 0              #a15t121f00e
+                        communication.cook_autoclave(ac_sets)
+                        socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
+
+                        #set_data[9] = False
+
+            except:
+                logging.info("no se pudo evaluar")
+                pass
+
+            ##### archivo para depurar
+            try:
+                f = open(DIR + "autoclave_on.txt","a+")
+             	f.write("se esta ejecutando autoclave" + str( time.time() - temp_save ) + '\n')
+            	f.close()
+                #logging.info("se guardo en autoclave.txt")
+
+            except:
+                pass
+        	    #logging.info("no se pudo guardar en autoclave.txt")
+
+
+            ####################################################################
             #logging.info("\n Se ejecuto Thread 1 emitiendo %s\n" % set_data)
 
         except:

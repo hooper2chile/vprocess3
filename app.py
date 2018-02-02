@@ -595,8 +595,8 @@ def background_thread1():
                         #setear default los flags si ya termino: a15t121f00e
                         ac_sets[0] = 121
                         ac_sets[1] = 15
-                        ac_sets[2] = 0
-                        ac_sets[3] = 0              #a15t121f00e
+                        ac_sets[2] = False
+                        ac_sets[3] = False              #a15t121f00e
                         communication.cook_autoclave(ac_sets)
                         socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 

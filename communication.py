@@ -216,25 +216,13 @@ def cook_autoclave(ac_sets):
     command = None
     temp = 120
     time = 30
-    flag_temp = 1
-    flag_time = 1
-
-
-    try:
-        f = open(DIR + "autoclave1.txt","a+")
-     	f.write(str(ac_sets) + '\n')
-    	f.close()
-
-
-    except:
-        logging.info("no se pudo recibir ac_sets desde app.py")
-        pass
-
+    flag_temp = 0
+    flag_time = 0
 
     try:
         #limites de temperatura
-        if ac_sets[0] >= 130:
-            ac_sets[0] = 130
+        if ac_sets[0] >= TEMP_MAX:
+            ac_sets[0] = TEMP_MAX
         elif ac_sets[0] <= 100:
             ac_sets[0] = 100
 
@@ -246,7 +234,6 @@ def cook_autoclave(ac_sets):
             ac_sets[1] = 99
         elif ac_sets[1] <= 10:
             ac_sets[1] = 10
-
         #str de time
         time = str(ac_sets[1])
 
@@ -256,7 +243,6 @@ def cook_autoclave(ac_sets):
             ac_sets[2] = 1
         else:
             ac_sets[2] = 0
-
         #str flag tiempo
         flag_time = str(ac_sets[2])
 
@@ -265,26 +251,20 @@ def cook_autoclave(ac_sets):
             ac_sets[3] = 1
         else:
             ac_sets[3] = 0
-
         #str flag temperatura
         flag_temp = str(ac_sets[3])
 
-
+        #se construye el string de autoclavado
         command = 'a' + time + 't' + temp + 'f' + str(flag_time) + str(flag_temp) + 'e'
+
+        f = open(DIR + "autoclave_string.txt","a+")
+     	f.write(str(command) + '_' + str(time.time())  + '\n')
+    	f.close()
 
     except:
         logging.info("no se pudo generar el command para autoclave2")
         pass
 
-
-    try:
-        f = open(DIR + "autoclave2.txt","a+")
-     	f.write(str(command) + '\n')
-    	f.close()
-
-    except:
-        logging.info("no se pudo guardar el comando del autoclave en el archivo de texto")
-        pass
 
 
     published_setpoint(command)

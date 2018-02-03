@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 #
 #uc_master
 #Writed by: Felipe Hooper
@@ -10,6 +9,7 @@
 from flask import Flask, render_template, session, request, Response, send_from_directory, make_response
 from flask_socketio import SocketIO, emit, disconnect
 
+from math import floor
 import time, os, sys, logging, communication, reviewDB, tocsv
 
 logging.basicConfig(filename='/home/pi/vprocess3/log/app.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
@@ -23,8 +23,9 @@ TIME_MAX  = 99  #99 [min]
 u_set_temp = [SPEED_MAX,0]
 u_set_ph   = [SPEED_MAX,SPEED_MAX]
 
-time_save = 0
-temp_save = 0
+temp_save  = 0
+time_save  = 0 #este se usa para info en las webpages
+time_save2 = 0 #este se usa para calculos con el timestamp
 ac_sets = [0,0,False,False]  #ac_sets = auto clave setpoints
 
 ph_set = [0,0,0,0]
@@ -496,7 +497,7 @@ def calibrar_u_temp(dato):
 #autoclave setpoits
 @socketio.on('ac_setpoints', namespace='/biocl')
 def autoclave_functions(dato):
-    global ac_sets, time_save, temp_save
+    global ac_sets, temp_save, time_save, time_save2
 
     try:
         ac_sets[0] = int(dato['ac_temp'])
@@ -507,37 +508,29 @@ def autoclave_functions(dato):
         time_save = int(dato['ac_time'])
         temp_save = int(dato['ac_temp'])
 
-
     except:
         ac_sets[0] = 22
         ac_sets[1] = 11
     	ac_sets[2] = "no_llego"
     	ac_sets[3] = "no_llego"
-
         time_save = "vacio"
         temp_save = "vacio"
-
         logging.info("no se pudo evaluar")
-
-
-    if ac_sets[0] > TEMP_MAX:
-        ac_sets[0] = TEMP_MAX
-
-    if ac_sets[1] > TIME_MAX:
-        ac_sets[1] = TIME_MAX
-
 
     #Con cada cambio en los parametros, se vuelven a emitir a todos los clientes.
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
-    #se toma el tiempo actual para evaluar posteriormente el tiempo transcurrido y se reenvian los setpoist del AutoClave
-    time_save = time.time()
-    temp_save = ac_sets[0]
-    communication.cook_autoclave(ac_sets) #se transmiten los datos de autoclave por communication
+    #se toma el tiempo actual para evaluar posteriormente el tiempo transcurrido, se guarda el ajuste de temperatura y se reenvian los setpoist del AutoClave
+    time_save2 = time.time()
+    time_save  = ac_sets[1]
+    temp_save  = ac_sets[0]
+
+    #se transmiten los datos de autoclave por communication
+    communication.cook_autoclave(ac_sets)
 
     try:
-        f = open(DIR + "autoclave.txt","a+")
-     	f.write(str(ac_sets) + ', ' + str(time_save) + ', ' + str(temp_save) + '\n')
+        f = open(DIR + "autoclave_sets.txt","a+")
+     	f.write(str(ac_sets) + ', ' + str(temp_save) + ', ' + str(time_save) + '\n')
     	f.close()
         #logging.info("se guardo en autoclave.txt")
 
@@ -554,23 +547,24 @@ def autoclave_functions(dato):
 def background_thread1():
     save_set_data = [0,0,0,0,0,1,1,1,1,1,0,0,0]
     k = 0
+    time_save3 = 0
 
-    global set_data, measures, ac_sets, time_save, temp_save
+    global set_data, measures, ac_sets, temp_save, time_save, time_save2
     while True:
         #se emiten las mediciones y setpoints para medir y graficar
         socketio.emit('Medidas', {'data': measures, 'set': set_data}, namespace='/biocl')
 
         #ZMQ DAQmx download data from micro controller: app.py<->communication.py<->myserial.py<->uc
-        temp_ = communication.zmq_client().split()
+        temporal = communication.zmq_client().split()
 
         try:
-            measures[0] = temp_[1]  #ph
-            measures[1] = temp_[2]  #oD
-            measures[2] = temp_[3]  #Temp1
-            measures[3] = temp_[4]  #Iph
-            measures[4] = temp_[5]  #Iod
-            measures[5] = temp_[6]  #Itemp1
-            measures[6] = temp_[7]  #Itemp2
+            measures[0] = temporal[1]  #ph
+            measures[1] = temporal[2]  #oD
+            measures[2] = temporal[3]  #Temp1
+            measures[3] = temporal[4]  #Iph
+            measures[4] = temporal[5]  #Iod
+            measures[5] = temporal[6]  #Itemp1
+            measures[6] = temporal[7]  #Itemp2
 
 
             for i in range(0,len(set_data)):
@@ -579,46 +573,39 @@ def background_thread1():
                     save_set_data = set_data
 
             ####################################################################
-            #se ejecuta solo si los flags estan en "1"
+            #flag de temporatura en proceso debe estar en 1 <=> deshabilitar
+            #se debe cumplir: flags habilitados en esterilizarar y deshabilitar en proceso
             try:
-                if set_data[9] is True:
-                    set_data9 = 1
-                else:
-                    set_data9 = 0
+                if ( ac_sets[2] == 1 and ac_sets[3] == 1 and save_set_data[9] == 1 ):
+                    #temperatura_medida > temperatura solicitada para AutoClave
+                    if float(measures[2]) >= temp_save:
+                        time_save3 = int(ac_sets[1])-int(floor( (time.time() - time_save2)/60.0 ))
+                        socketio.emit('ac_setpoints', {'set': [ac_sets[0],time_save3,1,1], 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
-            except:
-                logging.info("no se pudo hacer el true")
-                pass
+                        #para debug
+                        if k is 4:
+                            f = open(DIR + "tiempo_transcurrido_autoclave.txt","a+")
+                            f.write("se cumplieron los tres flags y llevamos: " + str( round((time.time() - time_save2)) ) + "[s] de autoclavado" + ' \n')
+                            f.write("measures[2] " + str(measures[2]) + '[ºC] \n')
+                            f.close()
+                            k = 0
+                        else:
+                            k += 1
 
-            try:#se debe cumplir: flags habilitados en esterilizarar y deshabilitar en proceso
-                if ( ac_sets[2] == 1 and ac_sets[3] == 1 and set_data9 == 1 ):
                     #algoritmo re-entrante para saber si hay que terminar o continuar con la esterilizacion en base al tiempo y temperatura!
-                    if ( (ac_sets[0] >= temp_save) and (time.time() - time_save > float(ac_sets[1])*60) ): #se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
+                    if ( (float(measures[2]) >= temp_save) and ( (time.time() - time_save2) > float(ac_sets[1])*60.0 ) ):#se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
                         #setear default los flags si ya termino: a15t121f00e
-                        ac_sets[0] = 121
-                        ac_sets[1] = 15
+                        ac_sets[0] = 0
+                        ac_sets[1] = 0
                         ac_sets[2] = 0
-                        ac_sets[3] = 0              #a15t121f00e
+                        ac_sets[3] = 0
+                                                   #a15t121f00e
                         communication.cook_autoclave(ac_sets)
                         socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
-
-
             except:
-                logging.info("no se pudo evaluar")
+                logging.info("no se pudo evaluar los if anidados")
                 pass
-
-            ##### archivo para depurar
-            try:
-                f = open(DIR + "autoclave_on.txt","a+")
-             	f.write("se esta ejecutando autoclave_falta_" + str( (time.time() - temp_save)/1000 ) + '\n')
-            	f.close()
-                #logging.info("se guardo en autoclave.txt")
-
-            except:
-                pass
-        	    #logging.info("no se pudo guardar en autoclave.txt")
-
 
             ####################################################################
             #logging.info("\n Se ejecuto Thread 1 emitiendo %s\n" % set_data)

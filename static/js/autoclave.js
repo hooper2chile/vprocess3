@@ -7,7 +7,7 @@ $(document).ready(function() {
 	    		       document.domain + ':' +
 		             location.port + namespace);
 
-
+    //SECCION MEDICIONES
     //Se escuchan las mediciones de ph, OD, Temp.
     socket.on('Medidas', function(msg) {
         $('#med1').text('pH: '    + msg.data[0]          ).html();
@@ -15,8 +15,7 @@ $(document).ready(function() {
         $('#med3').text('Temp: '  + msg.data[2] + ' º[C]').html();
     });
 
-
-
+    //SECCION AUTOCLAVE
     //se emiten los setpoints hacia el servidor
     $('form#ac_setpoints').submit(function(event) {
         socket.emit('ac_setpoints',
@@ -28,12 +27,10 @@ $(document).ready(function() {
 
         //para depurar
         console.log('Emitiendo Valores: temp, timer, good checked: ');
-      //  console.log($('#temp').val());
         console.log($('#time').val());
-	    //  console.log($('#time_enable').is(':checked'));
-	    //  console.log($('#temp_enable').is(':checked'));
         return false;
     });
+
     //se escuchan desde el servidor los setpoints aplicados
     //para ser desplegados en todos los clientes.
     socket.on('ac_setpoints', function(msg) {
@@ -47,10 +44,7 @@ $(document).ready(function() {
 
         //para depurar
         console.log('Checkeds Recibidos');
-      //  console.log($('#temp').val());
         console.log($('#time').val());
-      //  console.log($('#time_enable').is(':checked'));
-      //  console.log($('#temp_enable').is(':checked'));
     });
 
     $('#temp_set').css({ 'color': 'red', 'font-size': '110%' });
@@ -63,21 +57,10 @@ $(document).ready(function() {
                     { action  : $('select[name=selection]').val(),
                       checked : $('#confirm').is(':checked')
                     });
-        //para depurar
+      //para depurar
       //  console.log('Emitiendo Valores de Acción');
       //  console.log($('select[name=selection]').val())
       //  console.log($('#confirm').is(':checked'));
       return false;
     });
-
-    //se escuchan desde el servidor señal de reinicio,apagado, grabacion y limpiaza
-    //para ser desplegados en todos los clientes.
-    //socket.on('power', function(msg) {
-    //    document.getElementById("select").value = msg.set[0]
-    //    document.getElementById('confirm').checked = msg.set[1]
-
-      //  console.log('Recibiendo Valores de Acción');
-      //  console.log(msg.set[0]);
-      //  console.log(msg.set[1]);
-    //});
 });

@@ -521,7 +521,7 @@ def autoclave_functions(dato):
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
     #se toma el tiempo actual para evaluar posteriormente el tiempo transcurrido, se guarda el ajuste de temperatura y se reenvian los setpoist del AutoClave
-    time_save2 = time.time()
+    time_save2 = 0#time.time()
     time_save  = ac_sets[1]
     temp_save  = ac_sets[0]
 

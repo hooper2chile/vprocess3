@@ -583,11 +583,11 @@ def background_thread1():
                         socketio.emit('ac_setpoints', {'set': [ac_sets[0],time_save3,1,1], 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
                         #para debug
-                        if k is 4:
+                        if k is 3:
                             f = open(DIR + "tiempo_transcurrido_autoclave.txt","a+")
                             f.write("se cumplieron los tres flags y llevamos: " + str( round((time.time() - time_save2)) ) + "[s] de autoclavado" + ' \n')
-                            f.write("measures[2] " + str(measures[2]) + '[ºC] \n')
-                            f.close()
+                            f.write("measures2 " + str(measures2) + '[ºC]' +  'y ' +  str(measures[2]) + ' [C]\n')
+			    f.close()
                             k = 0
                         else:
                             k += 1

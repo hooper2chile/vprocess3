@@ -608,7 +608,6 @@ def background_thread1():
                                               #a15t121f00e
                     communication.cook_autoclave(ac_sets)
                     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
->>>>>>> 93fac2fed709114bac64e53a828752ea034af2b8
 
 
             ####################################################################

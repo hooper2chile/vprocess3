@@ -544,12 +544,15 @@ def autoclave_functions(dato):
 #ac_sets[2] =: flag deshabilitar control temperatura webpage proceso
 #ac_sets[3] =: flag habilitar (AutoClave) webpage esterilizacion
 #CONFIGURACION DE THREADS
+flag_time_save2 = 1
+
 def background_thread1():
     save_set_data = [0,0,0,0,0,1,1,1,1,1,0,0,0]
     k = 0
     time_save3 = 0
 
-    global set_data, measures, ac_sets, temp_save, time_save, time_save2
+
+    global set_data, measures, ac_sets, temp_save, time_save, time_save2, flag_time_save2
     while True:
         #se emiten las mediciones y setpoints para medir y graficar
         socketio.emit('Medidas', {'data': measures, 'set': set_data}, namespace='/biocl')
@@ -588,6 +591,10 @@ def background_thread1():
             if ( ac_sets[2] == 1 and ac_sets[3] == 1 and save_set_data[9] == 1 ):
                 #temperatura_medida > temperatura solicitada para AutoClave
                 if measures2 >= temp_save:
+                    if flag_time_save2 == 1:
+                        flag_time_save2 = 0
+                        time_save2 = time.time()
+
                     time_save3 = int(ac_sets[1])-int(floor( (time.time() - time_save2)/60.0 ))
                     socketio.emit('ac_setpoints', {'set': [ac_sets[0],time_save3,1,1], 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
@@ -608,6 +615,8 @@ def background_thread1():
                                               #a15t121f00e
                     communication.cook_autoclave(ac_sets)
                     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
+                    time_save2 = 0
+                    flag_time  = 1
 
 
             ####################################################################

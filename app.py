@@ -527,7 +527,7 @@ def autoclave_functions(dato):
 
     #Con cada cambio en los parametros, se vuelven a emitir a todos los clientes.
     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
-    
+
     try:
         f = open(DIR + "autoclave_sets.txt","a+")
      	f.write(str(ac_sets) + ', ' + str(temp_save) + ', ' + str(time_save) + '\n')
@@ -581,13 +581,6 @@ def background_thread1():
             ####################################################################
             #flag de temporatura en proceso debe estar en 1 <=> deshabilitar
             #se debe cumplir: flags habilitados en esterilizarar y deshabilitar en proceso
-
-            #para debug
-            f = open(DIR + "tiempo_transcurrido_autoclave2.txt","a+")
-            f.write("se cumplieron los tres flags y llevamos: " + str( floor((time.time() - time_save2)/60.0) ) + "[min] de autoclavado" + ' \n')
-            f.write("measures2 " + str(measures2) + '[ºC]' +  'y ' + str(measures[2]) + ' [ºC]\n')
-            f.close()
-
             if ( ac_sets[2] == 1 and ac_sets[3] == 1 and save_set_data[9] == 1 ):
                 #temperatura_medida > temperatura solicitada para AutoClave
                 if measures2 >= temp_save:

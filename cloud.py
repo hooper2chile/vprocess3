@@ -17,7 +17,7 @@ ID = '1sbAk593Hmgv75sXuyRFn_ObDC8j783Q7'
 time.sleep(15)
 gdrive = '/home/pi/vprocess3/config/./gdrive-linux-rpi'
 DIR1   = ' ' #'/home/pi/vprocess2/config/'
-DIR2   = '/home/pi/vprocess2/csv/'
+DIR2   = '/home/pi/vprocess3/csv/'
 
 
 while True:

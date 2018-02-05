@@ -465,26 +465,31 @@ void heat_exchanger_controller() {
       digitalWrite(VAF, HIGH); // apaga valvula de agua fria
     }
   }
-  //etapa apagado
+  //etapa apagado #tambien aplica para cuando se termina el tiempo de autoclavado
   else if (rst5 == 1) {
     digitalWrite(VAC, HIGH); // apaga valvula de vapor
     digitalWrite(VAF, HIGH); // apaga valvula de agua fria
     digitalWrite(BOM, HIGH); // apaga bomba
   }
+  //control de temperatura en ventana proceso opera con rst5 = 0.
   else if (rst5 == 0) {
     digitalWrite(BOM, LOW); // re-circula con bomba
-    // Enfriar
+    // Calentar
     if (Temp1 < mytempset - DELTA_TEMP) {
       digitalWrite(VAC, LOW);  // enciende valvula de agua caliente, aumenta temperatura
       digitalWrite(VAF, HIGH); // apaga valvula de agua fria
     }
-    // Calentar
+    // enfriar
     else if (Temp1 > mytempset + DELTA_TEMP) {
       digitalWrite(VAF, LOW);  // enciende valvula de agua fria
       digitalWrite(VAC, HIGH); // apaga valvula de agua caliente
     }
+    //este acaso aplica cuando se esta en el rango de + - DELTA_TEMP
+    else {
+      digitalWrite(VAF, HIGH); // apaga valvula de agua fria
+      digitalWrite(VAC, HIGH); // apaga valvula de agua caliente
+    }
   }
-
 
   return;
 }

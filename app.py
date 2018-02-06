@@ -611,7 +611,7 @@ def background_thread1():
                     communication.cook_autoclave(ac_sets)
                     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
                     #time_save2 = 0
-                    flag_time  = 1
+                    flag_time_save2  = 1
 
 
             ####################################################################

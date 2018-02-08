@@ -1,7 +1,7 @@
 /*
-uc_master
-Write by: Felipe Hooper
-Electronic Engineer
+ *  uc_master
+ *  Write by: Felipe Hooper
+ *  Electronic Engineer
 */
 
 #include <avr/wdt.h>
@@ -59,7 +59,6 @@ void loop() {
               default:
                 break;
           }
-
           //PORTB = 0<<PB0;
       }
       else {

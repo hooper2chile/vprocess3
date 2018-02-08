@@ -497,10 +497,10 @@ void heat_exchanger_controller() {
 
 // rst2 = : flag enable for motion in motor
 void motor_set() {
-  uint16_t pwm_set = 35;
+  uint16_t pwm_set = 40;
   uint16_t rpm_set = (uint16_t) mymix;
 
-  pwm_set = map(rpm_set, 50, 750, 35, 200);
+  pwm_set = map(rpm_set, 50, 750, 40, 180);
 
   if (rst2 == 0) {
     digitalWrite(VDF, LOW);        // VDF ON

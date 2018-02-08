@@ -37,7 +37,7 @@ def update_db(real_data, connector, c, first_time, BACKUP):
     #Backup DB in RAM to DISK SD
     if BACKUP:
 
-        filedb='/home/pi/vprocess2/database/backup__' + first_time + '__.db'
+        filedb='/home/pi/vprocess3/database/backup__' + first_time + '__.db'
 
         bck = sqlite3.connect(filedb)
         sqlitebck.copy(connector, bck)

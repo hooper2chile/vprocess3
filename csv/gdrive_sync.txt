@@ -1,4 +1,24 @@
 re-partimos 23 de enero 2018
+<<<<<<< HEAD
+sincronizado: Hora=20:18:20__Fecha=06-02-18 
+sincronizado: Hora=20:21:21__Fecha=06-02-18 
+sincronizado: Hora=20:24:27__Fecha=06-02-18 
+sincronizado: Hora=20:27:28__Fecha=06-02-18 
+sincronizado: Hora=20:30:28__Fecha=06-02-18 
+sincronizado: Hora=20:33:28__Fecha=06-02-18 
+sincronizado: Hora=20:34:43__Fecha=06-02-18 
+sincronizado: Hora=20:37:44__Fecha=06-02-18 
+sincronizado: Hora=20:38:38__Fecha=06-02-18 
+sincronizado: Hora=20:41:38__Fecha=06-02-18 
+sincronizado: Hora=20:44:38__Fecha=06-02-18 
+sincronizado: Hora=20:47:39__Fecha=06-02-18 
+sincronizado: Hora=20:50:39__Fecha=06-02-18 
+sincronizado: Hora=20:53:39__Fecha=06-02-18 
+sincronizado: Hora=20:56:11__Fecha=06-02-18 
+sincronizado: Hora=20:59:12__Fecha=06-02-18 
+sincronizado: Hora=21:02:12__Fecha=06-02-18 
+sincronizado: Hora=21:05:12__Fecha=06-02-18 
+=======
 sincronizado: Hora=15:11:56__Fecha=05-02-18 
 sincronizado: Hora=15:15:20__Fecha=05-02-18 
 sincronizado: Hora=15:18:22__Fecha=05-02-18 
@@ -173,6 +193,7 @@ sincronizado: Hora=12:30:09__Fecha=07-02-18
 sincronizado: Hora=12:33:12__Fecha=07-02-18 
 sincronizado: Hora=12:36:14__Fecha=07-02-18 
 sincronizado: Hora=12:39:17__Fecha=07-02-18 
+<<<<<<< HEAD
 sincronizado: Hora=12:40:52__Fecha=07-02-18 
 sincronizado: Hora=12:43:55__Fecha=07-02-18 
 sincronizado: Hora=12:47:00__Fecha=07-02-18 
@@ -285,3 +306,10 @@ sincronizado: Hora=16:07:33__Fecha=08-02-18
 sincronizado: Hora=16:26:18__Fecha=08-02-18 
 sincronizado: Hora=16:41:52__Fecha=08-02-18 
 sincronizado: Hora=16:44:56__Fecha=08-02-18 
+=======
+>>>>>>> 1d4c659561d71d879c8f09a4c379729482aba9bf
+>>>>>>> a005b628df21a4e4906727b27aa14614612c87f2
+sincronizado: Hora=16:50:27__Fecha=08-02-18 
+sincronizado: Hora=16:53:30__Fecha=08-02-18 
+sincronizado: Hora=16:56:33__Fecha=08-02-18 
+sincronizado: Hora=17:00:44__Fecha=08-02-18 

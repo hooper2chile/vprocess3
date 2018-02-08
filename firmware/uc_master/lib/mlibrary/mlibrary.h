@@ -31,11 +31,12 @@ SoftwareSerial mySerial(2, 3); // RX(Digital2), TX(Digital3) Software serial por
 
 #define PWM_PIN 5 // D5 is the pwm pin for 741 circuit
 
-// relays
+// releys
 #define VAF A0 // valvula agua fria
 #define VAC A1 // valvula agua caliente
-#define VDF A4 // enable vdf of motor (->rele->contactor)
 #define BOM A3 // enable de la bomba  (->rele->contactor)
+#define VDF A4 // enable vdf of motor (->rele->contactor)
+
 
 // Sensors
 const int SENSOR_PH    = A7; // Input pin for measuring Vout
@@ -496,10 +497,10 @@ void heat_exchanger_controller() {
 
 // rst2 = : flag enable for motion in motor
 void motor_set() {
-  uint16_t pwm_set = 40;
+  uint16_t pwm_set = 35;
   uint16_t rpm_set = (uint16_t) mymix;
 
-  pwm_set = map(rpm_set, 50, 750, 40, 255);
+  pwm_set = map(rpm_set, 50, 750, 35, 200);
 
   if (rst2 == 0) {
     digitalWrite(VDF, LOW);        // VDF ON
@@ -517,6 +518,7 @@ void setup_default_relay() {
   pinMode(VAF, OUTPUT);
   pinMode(VAC, OUTPUT);
   pinMode(BOM, OUTPUT);
+
   pinMode(VDF, OUTPUT);
   pinMode(PWM_PIN, OUTPUT);
 

@@ -495,13 +495,14 @@ void heat_exchanger_controller() {
   return;
 }
 
+/*
 // rst2 = : flag enable for motion in motor
 void motor_set() {
   uint16_t pwm_set = 40;
   uint16_t rpm_set = (uint16_t) mymix;
 
-  //pwm_set = map(rpm_set, 50, 750, 40, 165);
-  pwm_set = map(rpm_set, 50, 750, 20, 255);
+  pwm_set = map(rpm_set, 50, 750, 40, 165);
+  //pwm_set = map(rpm_set, 50, 750, 20, 255);
 
   if (rst2 == 0) {
     digitalWrite(VDF, LOW);        // VDF ON
@@ -514,6 +515,37 @@ void motor_set() {
     analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
   }
 }
+*/
+void motor_set() {
+  uint16_t k = 0;
+  uint16_t pwm_set = 40;
+  uint16_t rpm_set = (uint16_t) mymix;
+
+  pwm_set = map(rpm_set, 50, 750, 40, 165);
+  //pwm_set = map(rpm_set, 50, 750, 20, 255);
+
+  if (rst2 == 0) {
+    digitalWrite(VDF, LOW);        // VDF ON
+    //rutina para rampa de ascenso constante de velocidad de motor
+    while (k < pwm_set) {
+      k = k + 5;
+      analogWrite(PWM_PIN, k); // VDF SPEED SET
+      delay(150); //tiempo entre pasos
+      //analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
+    }
+    analogWrite(PWM_PIN, pwm_set); //luego de la rampa, se asegura el valor final
+  }
+  else {
+    rpm_set = 50;
+    pwm_set = 0;
+    digitalWrite(VDF, HIGH);       // VDF ON
+    analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
+  }
+}
+
+
+
+
 
 void setup_default_relay() {
   pinMode(VAF, OUTPUT);

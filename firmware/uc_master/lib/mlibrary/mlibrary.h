@@ -495,7 +495,7 @@ void heat_exchanger_controller() {
   return;
 }
 
-/*
+
 // rst2 = : flag enable for motion in motor
 void motor_set() {
   uint16_t pwm_set = 40;
@@ -515,7 +515,8 @@ void motor_set() {
     analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
   }
 }
-*/
+
+/*
 void motor_set() {
   uint16_t k = 0;
   uint16_t pwm_set = 40;
@@ -542,7 +543,7 @@ void motor_set() {
     analogWrite(PWM_PIN, pwm_set); // VDF SPEED SET
   }
 }
-
+*/
 
 
 

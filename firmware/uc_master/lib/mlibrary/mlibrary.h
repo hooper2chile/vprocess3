@@ -500,7 +500,8 @@ void motor_set() {
   uint16_t pwm_set = 40;
   uint16_t rpm_set = (uint16_t) mymix;
 
-  pwm_set = map(rpm_set, 50, 750, 40, 175);
+  //pwm_set = map(rpm_set, 50, 750, 40, 165);
+  pwm_set = map(rpm_set, 50, 750, 20, 255);
 
   if (rst2 == 0) {
     digitalWrite(VDF, LOW);        // VDF ON

@@ -3,7 +3,7 @@ import os, time
 
 
 
-DIR = "/home/pi/vprocess2/"
+DIR = "/home/pi/vprocess3/"
 
 while True:
     f = open(DIR + "datalogger_state.txt", 'a')

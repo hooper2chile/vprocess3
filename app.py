@@ -591,15 +591,6 @@ def background_thread1():
                     time_save3 = int(ac_sets[1])-int(floor( (time.time() - time_save2)/60.0 ))
                     socketio.emit('ac_setpoints', {'set': [ac_sets[0],time_save3,1,1], 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
 
-                    #para debug
-                    '''
-                    f = open(DIR + "tiempo_transcurrido_autoclave.txt","a+")
-                    f.write("se cumplieron los tres flags y llevamos: " + str( floor((time.time() - time_save2)/60.0) ) + "[min] de autoclavado" + ' \n')
-                    f.write("measures[2] " + str(measures[2]) + '[ºC] \n')
-                    f.write("measures2 " + str(measures2) + '[ºC]' +  'y ' +  str(measures[2]) + ' [C]\n')
-                    f.close()
-                    '''
-
                 #algoritmo re-entrante para saber si hay que terminar o continuar con la esterilizacion en base al tiempo y temperatura!
                 if ( ( measures2 >= temp_save) and ( (time.time() - time_save2) > float(ac_sets[1])*60.0 ) ):#se multiplica por 60 para poder comparar segundos(la resta) con minutos (ac_sets[1])
                     #setear default los flags si ya termino: a15t121f00e
@@ -612,8 +603,6 @@ def background_thread1():
                     socketio.emit('ac_setpoints', {'set': ac_sets, 'save': [temp_save, time_save]}, namespace='/biocl', broadcast=True)
                     time_save2 = 0
                     flag_time_save2  = 1
-
-
             ####################################################################
             #logging.info("\n Se ejecuto Thread 1 emitiendo %s\n" % set_data)
 
